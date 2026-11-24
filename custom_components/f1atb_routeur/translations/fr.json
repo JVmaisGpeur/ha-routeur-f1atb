@@ -1,0 +1,398 @@
+{
+  "config": {
+    "flow_title": "{name} ({host})",
+    "step": {
+      "user": {
+        "title": "Ajouter un routeur F1ATB",
+        "description": "Saisissez l'adresse IP du routeur. Les routeurs détectés sur le réseau, ou connus d'un routeur déjà ajouté, sont aussi proposés automatiquement dans « Découverts ».",
+        "data": {
+          "host": "Adresse IP du routeur"
+        }
+      },
+      "confirm": {
+        "title": "Routeur F1ATB détecté",
+        "description": "Voulez-vous ajouter ce routeur ?\n\n**{name}** – {host} – firmware {version}\nActions : {actions}\n\nSi ce n'est pas un routeur que vous voulez piloter, choisissez « Ignorer » : il ne sera plus proposé."
+      },
+      "water_heater": {
+        "title": "Chauffe-eau – {name} (firmware {version}) {untested}",
+        "description": "Indiquez la sortie qui alimente le chauffe-eau et comment l'intégration connaît sa température et sa puissance.",
+        "data": {
+          "water_heater_action": "Sortie du routeur qui alimente le chauffe-eau",
+          "temp_source": "Température de l'eau",
+          "temp_channel": "Sonde du routeur",
+          "temp_entity": "Capteur de température Home Assistant",
+          "power_source": "Puissance du chauffe-eau",
+          "declared_power": "Puissance déclarée (plaque du ballon)",
+          "meter_entity": "Compteur dédié au chauffe-eau",
+          "hot_method": "Savoir que l'eau est chaude",
+          "hot_energy_kwh": "Énergie de chauffe par jour"
+        },
+        "data_description": {
+          "power_source": "Déclarée : la valeur saisie. Compteur dédié : la puissance est mesurée. Calibration : bouton « Calibrer » qui mesure l'écart au compteur pendant quelques secondes.",
+          "hot_method": "Température : avec une sonde. Thermostat : détecte la coupure du thermostat. Énergie : après l'énergie indiquée ci-dessous."
+        }
+      },
+      "autonomous": {
+        "title": "Fonctionnement autonome",
+        "description": "Réglages du mode « Solaire + garantie » : si le soleil n'a pas suffi, le chauffe-eau est chauffé en heures creuses jusqu'à la consigne.\n\nLe planning du routeur contient déjà une plage ON : {on_slot}. Dans ce cas l'intégration démarre en « Solaire seul » pour ne pas chauffer deux fois.",
+        "data": {
+          "target_temperature": "Consigne de température",
+          "offpeak_entity": "Entité « heures creuses » (facultatif)",
+          "offpeak_start": "Début des heures creuses",
+          "offpeak_end": "Fin des heures creuses",
+          "deadline": "Heure limite de garantie"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Aucun routeur F1ATB ne répond à cette adresse.",
+      "entity_required": "Choisissez une entité.",
+      "temperature_needs_probe": "Cette méthode demande une sonde de température."
+    },
+    "abort": {
+      "already_configured": "Ce routeur est déjà ajouté.",
+      "cannot_connect": "Le routeur ne répond plus."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "target_temperature": "Consigne de température",
+          "offpeak_entity": "Entité « heures creuses » (facultatif)",
+          "offpeak_start": "Début des heures creuses",
+          "offpeak_end": "Fin des heures creuses",
+          "deadline": "Heure limite de garantie",
+          "hysteresis": "Hystérésis",
+          "safety_temperature": "Température de sécurité (coupe tout forçage)",
+          "max_manual_minutes": "Durée maximale d'une marche forcée manuelle",
+          "allow_external_control": "Autoriser le pilotage externe",
+          "grid_entity": "Capteur de puissance réseau (facultatif, sinon mesure du routeur)",
+          "scan_interval": "Intervalle d'interrogation",
+          "force_api": "Format du firmware (secours)"
+        },
+        "data_description": {
+          "force_api": "Laissez « Détection automatique ». À n'utiliser que si la détection échoue."
+        }
+      },
+      "water_heater": {
+        "title": "Chauffe-eau – {name} (firmware {version})",
+        "data": {
+          "water_heater_action": "Sortie du routeur qui alimente le chauffe-eau",
+          "temp_source": "Température de l'eau",
+          "temp_channel": "Sonde du routeur",
+          "temp_entity": "Capteur de température Home Assistant",
+          "power_source": "Puissance du chauffe-eau",
+          "declared_power": "Puissance déclarée",
+          "meter_entity": "Compteur dédié au chauffe-eau",
+          "hot_method": "Savoir que l'eau est chaude",
+          "hot_energy_kwh": "Énergie de chauffe par jour"
+        }
+      }
+    },
+    "error": {
+      "entity_required": "Choisissez une entité.",
+      "temperature_needs_probe": "Cette méthode demande une sonde de température."
+    }
+  },
+  "selector": {
+    "temp_source": {
+      "options": {
+        "none": "Pas de sonde",
+        "router": "Sonde du routeur",
+        "entity": "Capteur Home Assistant"
+      }
+    },
+    "power_source": {
+      "options": {
+        "declared": "Déclarée",
+        "meter": "Compteur dédié",
+        "calibration": "Calibration par le compteur de surplus"
+      }
+    },
+    "hot_method": {
+      "options": {
+        "temperature": "Température atteinte",
+        "thermostat": "Coupure du thermostat",
+        "energy": "Énergie de chauffe"
+      }
+    },
+    "force_api": {
+      "options": {
+        "auto": "Détection automatique",
+        "json": "17.xx (JSON)",
+        "text": "16.xx (texte)"
+      }
+    },
+    "mode": {
+      "options": {
+        "off": "Arrêt",
+        "solar": "Solaire seul",
+        "solar_guarantee": "Solaire + garantie",
+        "forced": "Marche forcée"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "routed_power": {
+        "name": "Puissance routée"
+      },
+      "routed_energy_today": {
+        "name": "Énergie routée aujourd'hui"
+      },
+      "routed_energy_total": {
+        "name": "Énergie routée totale"
+      },
+      "grid_energy_today": {
+        "name": "Énergie réseau (rattrapage) aujourd'hui"
+      },
+      "opening": {
+        "name": "Ouverture"
+      },
+      "force_remaining": {
+        "name": "Forçage restant"
+      },
+      "planning": {
+        "name": "Plage en cours",
+        "state": {
+          "off": "OFF",
+          "on": "ON",
+          "route": "Routage"
+        }
+      },
+      "external_control": {
+        "name": "Pilotage externe",
+        "state": {
+          "none": "Aucun"
+        }
+      },
+      "tariff": {
+        "name": "Tarif du jour"
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "rssi": {
+        "name": "Signal Wi-Fi"
+      },
+      "uptime": {
+        "name": "Durée de fonctionnement"
+      },
+      "water_temperature": {
+        "name": "Température du ballon"
+      },
+      "probe_temperature": {
+        "name": "Sonde {name}"
+      }
+    },
+    "binary_sensor": {
+      "connected": {
+        "name": "Connecté"
+      },
+      "target_reached": {
+        "name": "Ballon chaud"
+      },
+      "boost_active": {
+        "name": "Rattrapage en cours"
+      },
+      "thermostat_open": {
+        "name": "Thermostat coupé"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Mode",
+        "state": {
+          "off": "Arrêt",
+          "solar": "Solaire seul",
+          "solar_guarantee": "Solaire + garantie",
+          "forced": "Marche forcée",
+          "external": "Piloté"
+        }
+      }
+    },
+    "number": {
+      "target_temperature": {
+        "name": "Consigne"
+      },
+      "water_heater_power": {
+        "name": "Puissance du chauffe-eau"
+      },
+      "force_opening": {
+        "name": "Ouverture si forcée"
+      }
+    },
+    "button": {
+      "calibrate": {
+        "name": "Calibrer la puissance"
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_device": {
+      "message": "Cet appareil n'est pas un routeur F1ATB."
+    },
+    "invalid_mode": {
+      "message": "Mode inconnu."
+    },
+    "external_not_selectable": {
+      "message": "« Piloté » est choisi automatiquement quand un pilote externe prend la main."
+    },
+    "externally_controlled": {
+      "message": "Réglage piloté par « {controller} ». Désactivez ce pilotage, ou utilisez le service avec override: true."
+    },
+    "not_controller": {
+      "message": "« {controller} » n'a pas pris la main (service set_external_control)."
+    },
+    "external_disabled": {
+      "message": "Le pilotage externe est désactivé dans les options."
+    },
+    "read_only": {
+      "message": "Routeur en lecture seule ({reason})."
+    },
+    "needs_v17": {
+      "message": "Réglage disponible seulement avec un firmware 17.xx."
+    },
+    "write_failed": {
+      "message": "Le routeur n'a pas enregistré le réglage ({error})."
+    }
+  },
+  "issues": {
+    "untested_firmware": {
+      "title": "Firmware {version} non vérifié – {name}",
+      "description": "Le routeur {name} utilise le firmware {version}, qui n'a pas encore été vérifié avec cette intégration. Les mesures et le planning restent lisibles, mais aucun forçage n'est envoyé.\n\nOuvrez un ticket sur GitHub (JVmaisGpeur/ha-routeur-f1atb) en joignant les diagnostics de l'appareil (les mots de passe y sont masqués)."
+    }
+  },
+  "services": {
+    "set_external_control": {
+      "name": "Prendre ou rendre la main",
+      "description": "Un pilote externe (automatisation, autre intégration) prend la main sur certains réglages. À renouveler avant 30 min, sinon le routeur revient à son mode.",
+      "fields": {
+        "device_id": {
+          "name": "Routeur",
+          "description": "Routeur F1ATB."
+        },
+        "active": {
+          "name": "Actif",
+          "description": "Prendre (oui) ou rendre (non) la main."
+        },
+        "controller": {
+          "name": "Pilote",
+          "description": "Nom du pilote, affiché sur la carte."
+        },
+        "controlled_keys": {
+          "name": "Réglages pilotés",
+          "description": "mode, boost, target_temperature (tous par défaut)."
+        }
+      }
+    },
+    "set_mode": {
+      "name": "Changer de mode",
+      "description": "Arrêt, Solaire seul, Solaire + garantie ou Marche forcée.",
+      "fields": {
+        "device_id": {
+          "name": "Routeur",
+          "description": "Routeur F1ATB."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Nouveau mode."
+        },
+        "duration": {
+          "name": "Durée",
+          "description": "Durée d'une marche forcée."
+        },
+        "controller": {
+          "name": "Pilote",
+          "description": "Nom du pilote qui a pris la main (facultatif)."
+        },
+        "override": {
+          "name": "Prioritaire",
+          "description": "Action de l'utilisateur prioritaire sur le pilote externe."
+        }
+      }
+    },
+    "boost": {
+      "name": "Lancer un rattrapage",
+      "description": "Chauffe le ballon à pleine puissance pendant une durée, jusqu'à une énergie ou une température.",
+      "fields": {
+        "device_id": {
+          "name": "Routeur",
+          "description": "Routeur F1ATB."
+        },
+        "duration": {
+          "name": "Durée",
+          "description": "Durée maximale."
+        },
+        "energy": {
+          "name": "Énergie",
+          "description": "Énergie à fournir."
+        },
+        "until_temperature": {
+          "name": "Jusqu'à",
+          "description": "Température à atteindre."
+        },
+        "controller": {
+          "name": "Pilote",
+          "description": "Nom du pilote (facultatif)."
+        },
+        "override": {
+          "name": "Prioritaire",
+          "description": "Action de l'utilisateur prioritaire."
+        }
+      }
+    },
+    "cancel_boost": {
+      "name": "Arrêter le rattrapage",
+      "description": "Arrête le rattrapage en cours.",
+      "fields": {
+        "device_id": {
+          "name": "Routeur",
+          "description": "Routeur F1ATB."
+        },
+        "controller": {
+          "name": "Pilote",
+          "description": "Nom du pilote (facultatif)."
+        },
+        "override": {
+          "name": "Prioritaire",
+          "description": "Action de l'utilisateur prioritaire."
+        }
+      }
+    },
+    "set_target_temperature": {
+      "name": "Changer la consigne",
+      "description": "Consigne de température du ballon (temporaire si envoyée par le pilote).",
+      "fields": {
+        "device_id": {
+          "name": "Routeur",
+          "description": "Routeur F1ATB."
+        },
+        "temperature": {
+          "name": "Température",
+          "description": "Consigne."
+        },
+        "controller": {
+          "name": "Pilote",
+          "description": "Nom du pilote (facultatif)."
+        },
+        "override": {
+          "name": "Prioritaire",
+          "description": "Action de l'utilisateur prioritaire."
+        }
+      }
+    },
+    "calibrate": {
+      "name": "Calibrer la puissance",
+      "description": "Mesure la puissance du chauffe-eau par l'écart au compteur pendant un court forçage.",
+      "fields": {
+        "device_id": {
+          "name": "Routeur",
+          "description": "Routeur F1ATB."
+        }
+      }
+    }
+  }
+}

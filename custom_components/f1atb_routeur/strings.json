@@ -1,0 +1,398 @@
+{
+  "config": {
+    "flow_title": "{name} ({host})",
+    "step": {
+      "user": {
+        "title": "Add an F1ATB router",
+        "description": "Enter the router's IP address. Routers found on the network, or known by a router already added, are also offered automatically under \"Discovered\".",
+        "data": {
+          "host": "Router IP address"
+        }
+      },
+      "confirm": {
+        "title": "F1ATB router found",
+        "description": "Do you want to add this router?\n\n**{name}** – {host} – firmware {version}\nActions: {actions}\n\nIf this is not a router you want to control, choose \"Ignore\": it will not be offered again."
+      },
+      "water_heater": {
+        "title": "Water heater – {name} (firmware {version}) {untested}",
+        "description": "Choose the output that feeds the water heater and how the integration knows its temperature and power.",
+        "data": {
+          "water_heater_action": "Router output feeding the water heater",
+          "temp_source": "Water temperature",
+          "temp_channel": "Router probe",
+          "temp_entity": "Home Assistant temperature sensor",
+          "power_source": "Water heater power",
+          "declared_power": "Declared power (rating plate)",
+          "meter_entity": "Dedicated water heater meter",
+          "hot_method": "How to know the water is hot",
+          "hot_energy_kwh": "Daily heating energy"
+        },
+        "data_description": {
+          "power_source": "Declared: the value entered. Dedicated meter: measured. Calibration: \"Calibrate\" button measuring the grid difference for a few seconds.",
+          "hot_method": "Temperature: with a probe. Thermostat: detects the thermostat cutting off. Energy: after the energy below."
+        }
+      },
+      "autonomous": {
+        "title": "Standalone operation",
+        "description": "Settings of the \"Solar + guarantee\" mode: if the sun was not enough, the water heater is heated during off-peak hours up to the target.\n\nThe router schedule already has an ON slot: {on_slot}. In that case the integration starts in \"Solar only\" so as not to heat twice.",
+        "data": {
+          "target_temperature": "Target temperature",
+          "offpeak_entity": "Off-peak entity (optional)",
+          "offpeak_start": "Off-peak start",
+          "offpeak_end": "Off-peak end",
+          "deadline": "Guarantee deadline"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No F1ATB router answers at this address.",
+      "entity_required": "Choose an entity.",
+      "temperature_needs_probe": "This method needs a temperature probe."
+    },
+    "abort": {
+      "already_configured": "This router is already added.",
+      "cannot_connect": "The router no longer answers."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "target_temperature": "Target temperature",
+          "offpeak_entity": "Off-peak entity (optional)",
+          "offpeak_start": "Off-peak start",
+          "offpeak_end": "Off-peak end",
+          "deadline": "Guarantee deadline",
+          "hysteresis": "Hysteresis",
+          "safety_temperature": "Safety temperature (stops any forcing)",
+          "max_manual_minutes": "Maximum manual forced-on duration",
+          "allow_external_control": "Allow external control",
+          "grid_entity": "Grid power sensor (optional, router measurement otherwise)",
+          "scan_interval": "Polling interval",
+          "force_api": "Firmware format (fallback)"
+        },
+        "data_description": {
+          "force_api": "Keep \"Automatic detection\". Only use if detection fails."
+        }
+      },
+      "water_heater": {
+        "title": "Water heater – {name} (firmware {version})",
+        "data": {
+          "water_heater_action": "Router output feeding the water heater",
+          "temp_source": "Water temperature",
+          "temp_channel": "Router probe",
+          "temp_entity": "Home Assistant temperature sensor",
+          "power_source": "Water heater power",
+          "declared_power": "Declared power",
+          "meter_entity": "Dedicated water heater meter",
+          "hot_method": "How to know the water is hot",
+          "hot_energy_kwh": "Daily heating energy"
+        }
+      }
+    },
+    "error": {
+      "entity_required": "Choose an entity.",
+      "temperature_needs_probe": "This method needs a temperature probe."
+    }
+  },
+  "selector": {
+    "temp_source": {
+      "options": {
+        "none": "No probe",
+        "router": "Router probe",
+        "entity": "Home Assistant sensor"
+      }
+    },
+    "power_source": {
+      "options": {
+        "declared": "Declared",
+        "meter": "Dedicated meter",
+        "calibration": "Calibration with the surplus meter"
+      }
+    },
+    "hot_method": {
+      "options": {
+        "temperature": "Temperature reached",
+        "thermostat": "Thermostat cut-off",
+        "energy": "Heating energy"
+      }
+    },
+    "force_api": {
+      "options": {
+        "auto": "Automatic detection",
+        "json": "17.xx (JSON)",
+        "text": "16.xx (text)"
+      }
+    },
+    "mode": {
+      "options": {
+        "off": "Off",
+        "solar": "Solar only",
+        "solar_guarantee": "Solar + guarantee",
+        "forced": "Forced on"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "routed_power": {
+        "name": "Routed power"
+      },
+      "routed_energy_today": {
+        "name": "Routed energy today"
+      },
+      "routed_energy_total": {
+        "name": "Routed energy total"
+      },
+      "grid_energy_today": {
+        "name": "Grid energy (boost) today"
+      },
+      "opening": {
+        "name": "Opening"
+      },
+      "force_remaining": {
+        "name": "Forcing remaining"
+      },
+      "planning": {
+        "name": "Current slot",
+        "state": {
+          "off": "OFF",
+          "on": "ON",
+          "route": "Routing"
+        }
+      },
+      "external_control": {
+        "name": "External control",
+        "state": {
+          "none": "None"
+        }
+      },
+      "tariff": {
+        "name": "Today's tariff"
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "rssi": {
+        "name": "Wi-Fi signal"
+      },
+      "uptime": {
+        "name": "Uptime"
+      },
+      "water_temperature": {
+        "name": "Water temperature"
+      },
+      "probe_temperature": {
+        "name": "Probe {name}"
+      }
+    },
+    "binary_sensor": {
+      "connected": {
+        "name": "Connected"
+      },
+      "target_reached": {
+        "name": "Water hot"
+      },
+      "boost_active": {
+        "name": "Boost running"
+      },
+      "thermostat_open": {
+        "name": "Thermostat open"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Mode",
+        "state": {
+          "off": "Off",
+          "solar": "Solar only",
+          "solar_guarantee": "Solar + guarantee",
+          "forced": "Forced on",
+          "external": "Controlled"
+        }
+      }
+    },
+    "number": {
+      "target_temperature": {
+        "name": "Target"
+      },
+      "water_heater_power": {
+        "name": "Water heater power"
+      },
+      "force_opening": {
+        "name": "Forced opening"
+      }
+    },
+    "button": {
+      "calibrate": {
+        "name": "Calibrate power"
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_device": {
+      "message": "This device is not an F1ATB router."
+    },
+    "invalid_mode": {
+      "message": "Unknown mode."
+    },
+    "external_not_selectable": {
+      "message": "\"Controlled\" is set automatically when an external controller takes over."
+    },
+    "externally_controlled": {
+      "message": "Setting controlled by \"{controller}\". Stop that control, or call the service with override: true."
+    },
+    "not_controller": {
+      "message": "\"{controller}\" has not taken control (set_external_control service)."
+    },
+    "external_disabled": {
+      "message": "External control is disabled in the options."
+    },
+    "read_only": {
+      "message": "Router in read-only mode ({reason})."
+    },
+    "needs_v17": {
+      "message": "Setting only available with a 17.xx firmware."
+    },
+    "write_failed": {
+      "message": "The router did not save the setting ({error})."
+    }
+  },
+  "issues": {
+    "untested_firmware": {
+      "title": "Firmware {version} not verified – {name}",
+      "description": "Router {name} runs firmware {version}, not yet verified with this integration. Measurements and schedule are still read, but no forcing is sent.\n\nOpen an issue on GitHub (JVmaisGpeur/ha-routeur-f1atb) with the device diagnostics attached (passwords are redacted)."
+    }
+  },
+  "services": {
+    "set_external_control": {
+      "name": "Take or release control",
+      "description": "An external controller (automation, other integration) takes over some settings. Renew within 30 min, otherwise the router returns to its mode.",
+      "fields": {
+        "device_id": {
+          "name": "Router",
+          "description": "F1ATB router."
+        },
+        "active": {
+          "name": "Active",
+          "description": "Take (yes) or release (no) control."
+        },
+        "controller": {
+          "name": "Controller",
+          "description": "Controller name, shown on the card."
+        },
+        "controlled_keys": {
+          "name": "Controlled settings",
+          "description": "mode, boost, target_temperature (all by default)."
+        }
+      }
+    },
+    "set_mode": {
+      "name": "Set mode",
+      "description": "Off, Solar only, Solar + guarantee or Forced on.",
+      "fields": {
+        "device_id": {
+          "name": "Router",
+          "description": "F1ATB router."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "New mode."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Forced-on duration."
+        },
+        "controller": {
+          "name": "Controller",
+          "description": "Name of the controller in charge (optional)."
+        },
+        "override": {
+          "name": "Override",
+          "description": "User action takes priority over the external controller."
+        }
+      }
+    },
+    "boost": {
+      "name": "Start a boost",
+      "description": "Heats at full power for a duration, up to an energy or a temperature.",
+      "fields": {
+        "device_id": {
+          "name": "Router",
+          "description": "F1ATB router."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Maximum duration."
+        },
+        "energy": {
+          "name": "Energy",
+          "description": "Energy to deliver."
+        },
+        "until_temperature": {
+          "name": "Until",
+          "description": "Temperature to reach."
+        },
+        "controller": {
+          "name": "Controller",
+          "description": "Controller name (optional)."
+        },
+        "override": {
+          "name": "Override",
+          "description": "User action takes priority."
+        }
+      }
+    },
+    "cancel_boost": {
+      "name": "Stop the boost",
+      "description": "Stops the running boost.",
+      "fields": {
+        "device_id": {
+          "name": "Router",
+          "description": "F1ATB router."
+        },
+        "controller": {
+          "name": "Controller",
+          "description": "Controller name (optional)."
+        },
+        "override": {
+          "name": "Override",
+          "description": "User action takes priority."
+        }
+      }
+    },
+    "set_target_temperature": {
+      "name": "Set target",
+      "description": "Water heater target temperature (temporary when sent by the controller).",
+      "fields": {
+        "device_id": {
+          "name": "Router",
+          "description": "F1ATB router."
+        },
+        "temperature": {
+          "name": "Temperature",
+          "description": "Target."
+        },
+        "controller": {
+          "name": "Controller",
+          "description": "Controller name (optional)."
+        },
+        "override": {
+          "name": "Override",
+          "description": "User action takes priority."
+        }
+      }
+    },
+    "calibrate": {
+      "name": "Calibrate power",
+      "description": "Measures the water heater power from the grid difference during a short forcing.",
+      "fields": {
+        "device_id": {
+          "name": "Router",
+          "description": "F1ATB router."
+        }
+      }
+    }
+  }
+}

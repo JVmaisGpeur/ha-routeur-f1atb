@@ -1,0 +1,149 @@
+set_external_control:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: f1atb_routeur
+    active:
+      required: true
+      selector:
+        boolean:
+    controller:
+      required: true
+      example: "Mon automatisation"
+      selector:
+        text:
+    controlled_keys:
+      required: false
+      selector:
+        select:
+          multiple: true
+          options:
+            - mode
+            - boost
+            - target_temperature
+
+set_mode:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: f1atb_routeur
+    mode:
+      required: true
+      selector:
+        select:
+          translation_key: mode
+          options:
+            - "off"
+            - solar
+            - solar_guarantee
+            - forced
+    duration:
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 1440
+          unit_of_measurement: min
+    controller:
+      required: false
+      selector:
+        text:
+    override:
+      required: false
+      default: false
+      selector:
+        boolean:
+
+boost:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: f1atb_routeur
+    duration:
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 720
+          unit_of_measurement: min
+    energy:
+      required: false
+      selector:
+        number:
+          min: 0.1
+          max: 20
+          step: 0.1
+          unit_of_measurement: kWh
+    until_temperature:
+      required: false
+      selector:
+        number:
+          min: 20
+          max: 80
+          step: 0.5
+          unit_of_measurement: "°C"
+    controller:
+      required: false
+      selector:
+        text:
+    override:
+      required: false
+      default: false
+      selector:
+        boolean:
+
+cancel_boost:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: f1atb_routeur
+    controller:
+      required: false
+      selector:
+        text:
+    override:
+      required: false
+      default: false
+      selector:
+        boolean:
+
+set_target_temperature:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: f1atb_routeur
+    temperature:
+      required: true
+      selector:
+        number:
+          min: 30
+          max: 75
+          step: 0.5
+          unit_of_measurement: "°C"
+    controller:
+      required: false
+      selector:
+        text:
+    override:
+      required: false
+      default: false
+      selector:
+        boolean:
+
+calibrate:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: f1atb_routeur

@@ -1,0 +1,14 @@
+{
+  "domain": "f1atb_routeur",
+  "name": "Routeur F1ATB",
+  "codeowners": ["@JVmaisGpeur"],
+  "config_flow": true,
+  "dependencies": ["http", "frontend"],
+  "dhcp": [{ "hostname": "rms-esp32-*" }],
+  "documentation": "https://github.com/JVmaisGpeur/ha-routeur-f1atb",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/JVmaisGpeur/ha-routeur-f1atb/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
