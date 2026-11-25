@@ -44,8 +44,12 @@ async def main():
             raise A.F1atbError("x")
         return probes[host]
 
-    async def fake_scan(hass, exclude):
-        return [h for h in probes if h not in exclude]
+    from f1atb_routeur.discovery import ScanResult
+
+    scan_found = list(probes)
+
+    async def fake_scan(hass):
+        return ScanResult(found=list(scan_found), networks=["192.168.1.0/24"], tested=253, web=len(scan_found) + 3)
 
     CF._probe = fake_probe
     CF.async_scan = fake_scan
@@ -91,6 +95,19 @@ async def main():
     d = r["data"]
     check(d["hot_method"] == "thermostat" and d["water_heater_action"] == 1 and "temp_channel" not in d and "target_temperature" not in r["options"],
           "entrée 16.10 : relais 1, thermostat, sans consigne")
+
+    # --- Recherche sans nouveau routeur : compte rendu affiché sur l'écran de saisie
+    scan_found[:] = ["192.168.1.201"]
+    f = CF.F1atbConfigFlow()
+    f.hass = None
+    f._async_current_entries = lambda include_ignore=False: [types.SimpleNamespace(data={"host": "192.168.1.201"})]
+    r = await f.async_step_search()
+    check(r["step_id"] == "manual" and r["errors"] == {"base": "none_found"}, "aucun nouveau routeur : saisie de l'adresse")
+    scan = r["placeholders"]["scan"]
+    check("192.168.1.0/24" in scan and "253 adresses" in scan and "Déjà ajouté(s) : 192.168.1.201" in scan,
+          "compte rendu : réseau, adresses testées, routeur déjà ajouté")
+    r = await f.async_step_manual()
+    check(r["placeholders"] == {"scan": ""}, "saisie directe : pas de compte rendu")
 
     # --- Adresse inconnue
     f = CF.F1atbConfigFlow()

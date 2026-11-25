@@ -42,7 +42,7 @@ Le routeur ne mesure pas la puissance de ses sorties : il mesure seulement le po
 
    Les routeurs vus par le DHCP (nom réseau `RMS-ESP32-…`) et ceux que connaît un routeur déjà ajouté sont aussi proposés dans **Découverts**. Chacun doit être confirmé ; « Ignorer » : il n'est plus proposé.
 
-La recherche ne lit que la page d'accueil de chaque adresse : elle n'appelle aucune autre page et n'envoie aucune commande.
+La recherche regarde quelles adresses ont un serveur web (port 80), puis lit seulement la page d'état `/ajax_dataESP32` de chacune : un routeur F1ATB s'y reconnaît, les autres appareils répondent « page introuvable ». Aucune commande n'est envoyée. Si rien n'est trouvé, l'écran de saisie affiche le compte rendu (réseau parcouru, nombre de serveurs web, routeurs déjà ajoutés).
 
 ### Configuration
 

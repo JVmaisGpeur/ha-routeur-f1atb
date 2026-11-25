@@ -381,6 +381,14 @@ def parse_data_esp32(text: str) -> dict:
     }
 
 
+def looks_like_data_esp32(text: str) -> bool:
+    """Réponse de /ajax_dataESP32 d'un routeur F1ATB : champs séparés par RS et une adresse MAC."""
+    if not text or RS not in text:
+        return False
+    fields = text.split(GS)[0].split(RS)
+    return len(fields) >= 8 and any(_MAC.match(x.strip()) for x in fields)
+
+
 def redact(obj: Any) -> Any:
     """Masque les secrets d'une configuration (pour diagnostics et journaux)."""
     if isinstance(obj, dict):

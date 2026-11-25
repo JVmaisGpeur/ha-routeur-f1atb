@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 – recherche réseau / network search
+- **Recherche réseau corrigée** : un routeur est maintenant reconnu à sa page d'état `/ajax_dataESP32` (16.xx et 17.xx) et non plus au texte de sa page d'accueil, avec des délais adaptés à un ESP32 lent à répondre. / Routers are now recognised by their `/ajax_dataESP32` status page, with longer timeouts.
+- Si aucun nouveau routeur n'est trouvé, l'écran de saisie affiche le compte rendu de la recherche (réseau parcouru, serveurs web, routeurs déjà ajoutés). / Search report shown when no new router is found.
+
 ## 1.1.0 – retours d'essai / test feedback
 - **Recherche sur le réseau** à l'installation : liste des routeurs F1ATB trouvés, choix de ceux à ajouter (les suivants passent par « Découverts »), saisie de l'adresse en secours. / Network search during setup, with a multi-select of the routers found.
 - **Configuration simplifiée** : une question par écran, seulement celles utiles (sortie demandée seulement s'il y en a plusieurs, sonde unique choisie d'office, consigne masquée sans sonde, heure limite = fin des heures creuses). Options en trois rubriques. / Simplified setup, one question per screen; options split in three sections.

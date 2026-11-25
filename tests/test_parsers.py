@@ -83,6 +83,9 @@ def main():
     s = P.parse_data_esp32(ESP32_16)
     check(s["mac"] == "02:00:00:00:00:02", "dataESP32 : MAC de l'ESP32 (pas celle du point d'accès)")
     check(s["ip"] == "192.168.1.131" and s["hostname"] == "RMS-ESP32-0000001", "dataESP32 : IP et nom réseau")
+    check(P.looks_like_data_esp32(ESP32_16), "recherche réseau : /ajax_dataESP32 reconnu comme routeur F1ATB")
+    check(not P.looks_like_data_esp32("<html><body>404 Not Found</body></html>"), "recherche réseau : page d'un autre appareil ignorée")
+    check(not P.looks_like_data_esp32(""), "recherche réseau : réponse vide ignorée")
 
     r = P.parse_para_routeur_ajax(PARA_ROUTEUR_16)
     check(r["version"] == "16.10" and r["name"] == "Routeur_ECS_Exemple", "ParaRouteurAjax : version et nom")

@@ -19,7 +19,7 @@
       },
       "manual": {
         "title": "Router address",
-        "description": "Enter the router's IP address (shown on its home page or in your internet box).",
+        "description": "Enter the router's IP address (shown on its home page or in your internet box).{scan}",
         "data": {
           "host": "IP address"
         }
@@ -109,7 +109,7 @@
     },
     "error": {
       "cannot_connect": "No F1ATB router answers at this address.",
-      "none_found": "No F1ATB router found on the network. Enter its IP address."
+      "none_found": "No new F1ATB router found on the network. Enter its IP address."
     },
     "abort": {
       "already_configured": "This router is already added.",

@@ -62,6 +62,22 @@ from .discovery import async_scan
 CONF_ROUTERS = "routers"
 
 
+def _scan_summary(hass, scan, configured: set) -> str:
+    """Compte rendu de la recherche, affiché quand aucun nouveau routeur n'est trouvé."""
+    lang = str(getattr(getattr(hass, "config", None), "language", "") or "fr")
+    nets = ", ".join(scan.networks) or "–"
+    already = [h for h in scan.found if h in configured]
+    if lang.startswith("fr"):
+        txt = f"\n\nRecherche sur {nets} : {scan.tested} adresses testées, {scan.web} serveur(s) web, aucun nouveau routeur F1ATB."
+        if already:
+            txt += f" Déjà ajouté(s) : {', '.join(already)}."
+    else:
+        txt = f"\n\nSearch on {nets}: {scan.tested} addresses tested, {scan.web} web server(s), no new F1ATB router."
+        if already:
+            txt += f" Already added: {', '.join(already)}."
+    return txt
+
+
 async def _probe(hass, host: str) -> tuple[RouterConfig, dict, list]:
     """Lecture seule : version, configuration, système et températures."""
     client = F1atbClient(async_get_clientsession(hass), host)
@@ -310,16 +326,17 @@ class F1atbConfigFlow(_WaterHeaterSteps, ConfigFlow, domain=DOMAIN):
         """Recherche sur le réseau local, puis choix des routeurs à ajouter."""
         if user_input is None:
             configured = {e.data.get(CONF_HOST) for e in self._async_current_entries(include_ignore=False)}
+            scan = await async_scan(self.hass)
             self._found = {}
-            for host in await async_scan(self.hass, configured):
+            for host in scan.found:
+                if host in configured:
+                    continue
                 try:
                     self._found[host] = await _probe(self.hass, host)
                 except F1atbError:
                     continue
             if not self._found:
-                return self.async_show_form(
-                    step_id="manual", data_schema=vol.Schema({vol.Required(CONF_HOST): str}), errors={"base": "none_found"}
-                )
+                return self._manual_form({"base": "none_found"}, _scan_summary(self.hass, scan, configured))
             opts = [
                 sel.SelectOptionDict(value=h, label=f"{cfg.name} – {h} – firmware {cfg.firmware.version}")
                 for h, (cfg, _s, _t) in self._found.items()
@@ -351,7 +368,15 @@ class F1atbConfigFlow(_WaterHeaterSteps, ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             else:
                 return await self._async_use(host)
-        return self.async_show_form(step_id="manual", data_schema=vol.Schema({vol.Required(CONF_HOST): str}), errors=errors)
+        return self._manual_form(errors)
+
+    def _manual_form(self, errors: dict[str, str], scan: str = "") -> ConfigFlowResult:
+        return self.async_show_form(
+            step_id="manual",
+            data_schema=vol.Schema({vol.Required(CONF_HOST): str}),
+            errors=errors,
+            description_placeholders={"scan": scan},
+        )
 
     async def _async_use(self, host: str) -> ConfigFlowResult:
         assert self._cfg is not None

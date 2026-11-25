@@ -19,7 +19,7 @@
       },
       "manual": {
         "title": "Adresse du routeur",
-        "description": "Saisissez l'adresse IP du routeur (affichée sur sa page d'accueil ou dans votre box).",
+        "description": "Saisissez l'adresse IP du routeur (affichée sur sa page d'accueil ou dans votre box).{scan}",
         "data": {
           "host": "Adresse IP"
         }
@@ -109,7 +109,7 @@
     },
     "error": {
       "cannot_connect": "Aucun routeur F1ATB ne répond à cette adresse.",
-      "none_found": "Aucun routeur F1ATB trouvé sur le réseau. Saisissez son adresse IP."
+      "none_found": "Aucun nouveau routeur F1ATB trouvé sur le réseau. Saisissez son adresse IP."
     },
     "abort": {
       "already_configured": "Ce routeur est déjà ajouté.",

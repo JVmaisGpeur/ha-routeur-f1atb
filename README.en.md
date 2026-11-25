@@ -42,7 +42,7 @@ The router does not measure its outputs' power, only the grid connection point (
 
    Routers seen by DHCP (hostname `RMS-ESP32-…`) and those known by a router already added are offered under **Discovered** too. Each must be confirmed; "Ignore": it is not offered again.
 
-The search only reads each address's home page: it calls no other page and sends no command.
+The search checks which addresses run a web server (port 80), then only reads the `/ajax_dataESP32` status page of each: an F1ATB router is recognised by it, other devices answer "not found". No command is sent. If nothing is found, the address screen shows a report (network scanned, number of web servers, routers already added).
 
 ### Configuration
 
