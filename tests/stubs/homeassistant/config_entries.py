@@ -17,7 +17,7 @@ class _Flow:
 class ConfigFlow(_Flow):
     def __init_subclass__(cls, domain=None, **kw): super().__init_subclass__(**kw)
     context = {}
-    async def async_set_unique_id(self, uid): self.unique_id = uid
+    async def async_set_unique_id(self, uid, *, raise_on_progress=True): self.unique_id = uid; self.raise_on_progress = raise_on_progress
     def _abort_if_unique_id_configured(self, updates=None): pass
     def _async_current_entries(self, include_ignore=True): return []
     def _async_abort_entries_match(self, match): pass

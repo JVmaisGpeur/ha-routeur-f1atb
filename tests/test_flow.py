@@ -65,6 +65,7 @@ async def main():
     check(len(discovery_flow.CREATED) == 1 and discovery_flow.CREATED[0][1]["host"] == "192.168.1.131",
           "2e routeur coché : proposé à part dans « Découverts »")
     check(r["step_id"] == "temperature", "une seule sortie active : question de la sortie sautée")
+    check(f.raise_on_progress is False, "routeur choisi dans la recherche : pris même s'il attend dans « Découverts »")
     check(keys(r) == ["temp_source"], "écran température : une seule question")
     r = await f.async_step_temperature({"temp_source": "router"})
     check(r["step_id"] == "power" and keys(r) == ["power_source"], "une seule sonde (T°_ECS) : choisie d'office, méthode « température »")

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.2 – recherche réseau / network search
+- **Correction** : un routeur choisi dans la recherche (ou par son adresse) était refusé avec « déjà en cours de configuration » quand Home Assistant l'avait aussi proposé dans « Découverts ». Le choix de l'utilisateur passe maintenant en premier, et la proposition de « Découverts » disparaît une fois le routeur ajouté. / Fix: a router picked in the search was refused as "already in progress" when it was also waiting under "Discovered".
+
 ## 1.1.1 – recherche réseau / network search
 - **Correction** : après la recherche, l'écran de choix des routeurs trouvés était refusé par Home Assistant (« 400 Bad Request »), de même que les écrans « sortie » et « sonde » quand le routeur en a plusieurs. / Fix: the router list, output and probe screens were rejected by Home Assistant (400 Bad Request).
 - **Recherche réseau corrigée** : un routeur est maintenant reconnu à sa page d'état `/ajax_dataESP32` (16.xx et 17.xx) et non plus au texte de sa page d'accueil, avec des délais adaptés à un ESP32 lent à répondre. / Routers are now recognised by their `/ajax_dataESP32` status page, with longer timeouts.

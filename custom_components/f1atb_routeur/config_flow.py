@@ -378,7 +378,9 @@ class F1atbConfigFlow(_WaterHeaterSteps, ConfigFlow, domain=DOMAIN):
     async def _async_use(self, host: str) -> ConfigFlowResult:
         assert self._cfg is not None
         self._host = host
-        await self.async_set_unique_id(_unique_id(self._cfg, self._system, host))
+        # Choix de l'utilisateur (recherche ou adresse) : il prend la main même si le routeur
+        # attend déjà dans « Découverts » ; cette proposition disparaît quand l'entrée est créée.
+        await self.async_set_unique_id(_unique_id(self._cfg, self._system, host), raise_on_progress=False)
         self._abort_if_unique_id_configured(updates={CONF_HOST: host})
         return await self.async_step_output()
 
