@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.1.1 – recherche réseau / network search
+- **Correction** : après la recherche, l'écran de choix des routeurs trouvés était refusé par Home Assistant (« 400 Bad Request »), de même que les écrans « sortie » et « sonde » quand le routeur en a plusieurs. / Fix: the router list, output and probe screens were rejected by Home Assistant (400 Bad Request).
 - **Recherche réseau corrigée** : un routeur est maintenant reconnu à sa page d'état `/ajax_dataESP32` (16.xx et 17.xx) et non plus au texte de sa page d'accueil, avec des délais adaptés à un ESP32 lent à répondre. / Routers are now recognised by their `/ajax_dataESP32` status page, with longer timeouts.
 - Si aucun nouveau routeur n'est trouvé, l'écran de saisie affiche le compte rendu de la recherche (réseau parcouru, serveurs web, routeurs déjà ajoutés). / Search report shown when no new router is found.
 

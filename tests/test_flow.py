@@ -109,6 +109,39 @@ async def main():
     r = await f.async_step_manual()
     check(r["placeholders"] == {"scan": ""}, "saisie directe : pas de compte rendu")
 
+    # --- Deux sorties actives et deux sondes : écrans « sortie » et « sonde » (sélecteurs sans traduction)
+    import dataclasses
+    two = [dataclasses.replace(a, mode="multi_sine" if a.index == 0 else "cut") for a in CFG17.actions[:2]]
+    cfg2 = dataclasses.replace(CFG17, actions=two, temp_names=["Haut", "Bas", "", ""])
+    probes["192.168.1.50"] = (cfg2, {"mac": "ee:ff"}, [52.0, 38.5, None, None])
+    f = CF.F1atbConfigFlow()
+    f.hass = None
+    r = await f.async_step_manual({"host": "192.168.1.50"})
+    check(r["step_id"] == "output" and keys(r) == ["water_heater_action"], "deux sorties actives : question de la sortie posée")
+    r = await f.async_step_output({"water_heater_action": "1"})
+    r = await f.async_step_temperature({"temp_source": "router"})
+    check(r["step_id"] == "temp_channel" and keys(r) == ["temp_channel"], "deux sondes : question de la sonde posée")
+    r = await f.async_step_temp_channel({"temp_channel": "1"})
+    check(r["step_id"] == "power", "sonde choisie : puissance ensuite")
+
+    # --- Options : menu, puis chacune des trois rubriques s'affiche
+    o = CF.F1atbOptionsFlow()
+    o.hass = None
+    o.config_entry = types.SimpleNamespace(
+        data={"host": "192.168.1.201", "water_heater_action": 0, "temp_source": "router", "temp_channel": 0,
+              "hot_method": "temperature", "power_source": "declared", "declared_power": 2153},
+        options={"target_temperature": 55, "offpeak_start": "23:00:00", "offpeak_end": "06:00:00"},
+        runtime_data=types.SimpleNamespace(config=CFG17, data={"temperatures": [44.1, None, None, None]}),
+    )
+    r = await o.async_step_init()
+    check(r["type"] == "menu" and r["menu_options"] == ["output", "offpeak", "advanced"], "options : menu en trois rubriques")
+    r = await o.async_step_offpeak()
+    check(r["step_id"] == "offpeak" and "offpeak_entity" in keys(r), "options : heures creuses et consigne")
+    r = await o.async_step_advanced()
+    check(r["step_id"] == "advanced" and "force_api" in keys(r), "options : avancé")
+    r = await o.async_step_output()
+    check(r["step_id"] == "temperature", "options : chauffe-eau (une seule sortie, question sautée)")
+
     # --- Adresse inconnue
     f = CF.F1atbConfigFlow()
     f.hass = None

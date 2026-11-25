@@ -109,14 +109,11 @@ def _action_label(a: P.ActionConfig) -> str:
 
 
 def _select(options, key: str | None = None, multiple: bool = False) -> sel.SelectSelector:
-    return sel.SelectSelector(
-        sel.SelectSelectorConfig(
-            options=options,
-            translation_key=key,
-            multiple=multiple,
-            mode=sel.SelectSelectorMode.LIST,
-        )
-    )
+    config = sel.SelectSelectorConfig(options=options, multiple=multiple, mode=sel.SelectSelectorMode.LIST)
+    if key:
+        # Home Assistant refuse translation_key=None (le formulaire répondait « 400 Bad Request »)
+        config["translation_key"] = key
+    return sel.SelectSelector(config)
 
 
 def _number(minimum, maximum, step, unit) -> sel.NumberSelector:
