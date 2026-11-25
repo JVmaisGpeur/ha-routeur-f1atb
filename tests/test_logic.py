@@ -152,6 +152,38 @@ async def main():
     await c.async_set_mode("solar", override=True)
     check(c.external is None and c.user_mode == "solar", "override de l'utilisateur : fin du pilotage externe")
 
+    # État lisible
+    d = await cycle(c)
+    check(d["status"] in ("waiting_surplus", "idle", "solar", "hot") and "power_w" in d["status_info"], "capteur d'état renseigné")
+
+    # Affichage seulement (control_enabled à l'arrêt)
+    client.live["actions"][0]["force_min"] = 0
+    await c.async_set_mode("forced", duration_min=30)
+    await cycle(c)
+    n = len(client.commands)
+    await c.async_set_control_enabled(False)
+    d = await cycle(c)
+    check(client.commands[-1] == 0 and len(client.commands) == n + 1, "affichage seulement : notre marche forcée est levée une fois")
+    await cycle(c)
+    check(len(client.commands) == n + 1 and d["status_info"]["display_only"], "affichage seulement : plus aucune commande")
+    for fn in (lambda: c.async_set_mode("off"), lambda: c.async_boost(), lambda: c.async_set_external_control(True, "Chef", ["mode"])):
+        try:
+            await fn()
+            check(False, "refus attendu")
+        except ServiceValidationError as err:
+            assert err.translation_key == "control_disabled"
+    check(True, "affichage seulement : mode, rattrapage et prise de main refusés")
+    await c.async_set_control_enabled(True)
+    await c.async_set_mode("solar")
+
+    # Raison transmise par le pilote
+    await c.async_set_external_control(True, "Chef", ["mode"], reason="Batteries prioritaires")
+    await c.async_set_mode("off", controller="Chef")
+    d = await cycle(c)
+    check(d["status"] == "blocked" and d["status_info"]["reason"] == "Batteries prioritaires" and d["status_info"]["controller"] == "Chef",
+          "pilote : état « bloqué » avec la raison")
+    await c.async_set_external_control(False, "Chef", None)
+
     # Mode arrêt et marche forcée manuelle
     client.live["actions"][0]["force_min"] = 0
     await c.async_set_mode("off")
@@ -204,9 +236,10 @@ async def main():
     await cl.async_force(1, -30, 30)
     await cl.async_force(1, 0, 25)
     await cl.async_force(1, 0, -20)
-    check(sent == ["/ajax_etatActions?NumAction=1&Force=1", "/ajax_etatActions?NumAction=1&Force=-1",
-                   "/ajax_etatActions?NumAction=1&Force=-1", "/ajax_etatActions?NumAction=1&Force=-1"],
-          "16.xx : ON = Force=1 ; ON→arrêt = deux Off ; fin d'une marche = Off ; arrêt forcé laissé expirer")
+    await cl.async_force(1, 30, -20)
+    b = "/ajax_etatActions?NumAction=1&Force="
+    check(sent == [b + "1", b + "-1", b + "-1", b + "-1", b + "1", b + "1", b + "1"],
+          "16.xx : ON ; ON→arrêt = deux Off ; fin de marche = Off ; fin d'arrêt = ON ; arrêt→marche = deux ON")
     sent.clear()
     cl.firmware = P.FirmwareInfo(P.FW_JSON, "17.30")
     await cl.async_force(0, -30, 0)

@@ -4,96 +4,232 @@
     "step": {
       "user": {
         "title": "Add an F1ATB router",
-        "description": "Enter the router's IP address. Routers found on the network, or known by a router already added, are also offered automatically under \"Discovered\".",
+        "description": "How should the router be found?",
+        "menu_options": {
+          "search": "Search the network",
+          "manual": "Enter the IP address"
+        }
+      },
+      "search": {
+        "title": "Routers found",
+        "description": "{count} F1ATB router(s) found on the network. Tick the ones to add: the first is set up now, the others appear under \"Discovered\" to be confirmed one by one.",
         "data": {
-          "host": "Router IP address"
+          "routers": "Routers to add"
+        }
+      },
+      "manual": {
+        "title": "Router address",
+        "description": "Enter the router's IP address (shown on its home page or in your internet box).",
+        "data": {
+          "host": "IP address"
         }
       },
       "confirm": {
         "title": "F1ATB router found",
-        "description": "Do you want to add this router?\n\n**{name}** – {host} – firmware {version}\nActions: {actions}\n\nIf this is not a router you want to control, choose \"Ignore\": it will not be offered again."
+        "description": "Do you want to add this router?\n\n**{name}** – {host} – firmware {version}\nOutputs: {actions}\n\nIf this is not a router you want to add, choose \"Ignore\": it will not be offered again."
       },
-      "water_heater": {
-        "title": "Water heater – {name} (firmware {version}) {untested}",
-        "description": "Choose the output that feeds the water heater and how the integration knows its temperature and power.",
+      "output": {
+        "title": "Water heater output",
+        "description": "The router has several active outputs. Which one feeds the water heater?",
         "data": {
-          "water_heater_action": "Router output feeding the water heater",
-          "temp_source": "Water temperature",
-          "temp_channel": "Router probe",
-          "temp_entity": "Home Assistant temperature sensor",
-          "power_source": "Water heater power",
-          "declared_power": "Declared power (rating plate)",
-          "meter_entity": "Dedicated water heater meter",
-          "hot_method": "How to know the water is hot",
-          "hot_energy_kwh": "Daily heating energy"
-        },
-        "data_description": {
-          "power_source": "Declared: the value entered. Dedicated meter: measured. Calibration: \"Calibrate\" button measuring the grid difference for a few seconds.",
-          "hot_method": "Temperature: with a probe. Thermostat: detects the thermostat cutting off. Energy: after the energy below."
+          "water_heater_action": "Water heater output"
         }
       },
-      "autonomous": {
-        "title": "Standalone operation",
-        "description": "Settings of the \"Solar + guarantee\" mode: if the sun was not enough, the water heater is heated during off-peak hours up to the target.\n\nThe router schedule already has an ON slot: {on_slot}. In that case the integration starts in \"Solar only\" so as not to heat twice.",
+      "temperature": {
+        "title": "Water temperature",
+        "description": "How does the integration know the water temperature?\n\nProbes seen on the router: {probes}\n\nWithout a probe, the integration knows the tank is hot when the thermostat cuts off or after a heating energy.",
+        "data": {
+          "temp_source": "Water temperature"
+        }
+      },
+      "temp_channel": {
+        "title": "Router probe",
+        "description": "The router has several probes. Which one is in the water heater?",
+        "data": {
+          "temp_channel": "Water heater probe"
+        }
+      },
+      "temp_entity": {
+        "title": "Temperature sensor",
+        "description": "Choose the Home Assistant sensor measuring the water temperature.",
+        "data": {
+          "temp_entity": "Temperature sensor"
+        }
+      },
+      "hot": {
+        "title": "No probe: when is the water hot?",
+        "description": "Without a probe, the integration needs to know when to stop heating.",
+        "data": {
+          "hot_method": "The tank is hot when…"
+        },
+        "data_description": {
+          "hot_method": "Thermostat: the water heater stops drawing power while supplied (simplest). Energy: after supplying the energy set in the next step."
+        }
+      },
+      "hot_energy": {
+        "title": "Heating energy",
+        "description": "Energy to supply before the tank counts as hot (per day).",
+        "data": {
+          "hot_energy_kwh": "Energy per day"
+        }
+      },
+      "power": {
+        "title": "Water heater power",
+        "description": "The router does not measure the power sent to the water heater. How does the integration know it?",
+        "data": {
+          "power_source": "Water heater power"
+        },
+        "data_description": {
+          "power_source": "Rating plate: the power written on the tank. Dedicated meter: a sensor measuring only the water heater. Calibration: \"Calibrate power\" button after setup (measured by the surplus meter)."
+        }
+      },
+      "power_declared": {
+        "title": "Rating plate power",
+        "description": "Power written on the water heater's rating plate.",
+        "data": {
+          "declared_power": "Power"
+        }
+      },
+      "power_meter": {
+        "title": "Water heater meter",
+        "description": "Power sensor measuring only the water heater.",
+        "data": {
+          "meter_entity": "Power sensor"
+        }
+      },
+      "offpeak": {
+        "title": "Off-peak hours",
+        "description": "In \"Solar + guarantee\" mode, if the sun was not enough, the water heater is heated during off-peak hours.\n\nThe router schedule already has an ON slot: {on_slot}. In that case the integration starts in \"Solar only\" so as not to heat twice.",
         "data": {
           "target_temperature": "Target temperature",
-          "offpeak_entity": "Off-peak entity (optional)",
           "offpeak_start": "Off-peak start",
-          "offpeak_end": "Off-peak end",
-          "deadline": "Guarantee deadline"
+          "offpeak_end": "Off-peak end"
         }
       }
     },
     "error": {
       "cannot_connect": "No F1ATB router answers at this address.",
-      "entity_required": "Choose an entity.",
-      "temperature_needs_probe": "This method needs a temperature probe."
+      "none_found": "No F1ATB router found on the network. Enter its IP address."
     },
     "abort": {
       "already_configured": "This router is already added.",
-      "cannot_connect": "The router no longer answers."
+      "cannot_connect": "The router no longer answers.",
+      "nothing_selected": "No router selected."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Options",
-        "data": {
-          "target_temperature": "Target temperature",
-          "offpeak_entity": "Off-peak entity (optional)",
-          "offpeak_start": "Off-peak start",
-          "offpeak_end": "Off-peak end",
-          "deadline": "Guarantee deadline",
-          "hysteresis": "Hysteresis",
-          "safety_temperature": "Safety temperature (stops any forcing)",
-          "max_manual_minutes": "Maximum manual forced-on duration",
-          "allow_external_control": "Allow external control",
-          "grid_entity": "Grid power sensor (optional, router measurement otherwise)",
-          "scan_interval": "Polling interval",
-          "force_api": "Firmware format (fallback)"
-        },
-        "data_description": {
-          "force_api": "Keep \"Automatic detection\". Only use if detection fails."
+        "description": "What do you want to set?",
+        "menu_options": {
+          "output": "Water heater (output, temperature, power)",
+          "offpeak": "Off-peak hours and target",
+          "advanced": "Advanced"
         }
       },
-      "water_heater": {
-        "title": "Water heater – {name} (firmware {version})",
+      "output": {
+        "title": "Water heater output",
+        "description": "The router has several active outputs. Which one feeds the water heater?",
         "data": {
-          "water_heater_action": "Router output feeding the water heater",
-          "temp_source": "Water temperature",
-          "temp_channel": "Router probe",
-          "temp_entity": "Home Assistant temperature sensor",
-          "power_source": "Water heater power",
-          "declared_power": "Declared power",
-          "meter_entity": "Dedicated water heater meter",
-          "hot_method": "How to know the water is hot",
-          "hot_energy_kwh": "Daily heating energy"
+          "water_heater_action": "Water heater output"
+        }
+      },
+      "temperature": {
+        "title": "Water temperature",
+        "description": "How does the integration know the water temperature?\n\nProbes seen on the router: {probes}\n\nWithout a probe, the integration knows the tank is hot when the thermostat cuts off or after a heating energy.",
+        "data": {
+          "temp_source": "Water temperature"
+        }
+      },
+      "temp_channel": {
+        "title": "Router probe",
+        "description": "The router has several probes. Which one is in the water heater?",
+        "data": {
+          "temp_channel": "Water heater probe"
+        }
+      },
+      "temp_entity": {
+        "title": "Temperature sensor",
+        "description": "Choose the Home Assistant sensor measuring the water temperature.",
+        "data": {
+          "temp_entity": "Temperature sensor"
+        }
+      },
+      "hot": {
+        "title": "No probe: when is the water hot?",
+        "description": "Without a probe, the integration needs to know when to stop heating.",
+        "data": {
+          "hot_method": "The tank is hot when…"
+        },
+        "data_description": {
+          "hot_method": "Thermostat: the water heater stops drawing power while supplied (simplest). Energy: after supplying the energy set in the next step."
+        }
+      },
+      "hot_energy": {
+        "title": "Heating energy",
+        "description": "Energy to supply before the tank counts as hot (per day).",
+        "data": {
+          "hot_energy_kwh": "Energy per day"
+        }
+      },
+      "power": {
+        "title": "Water heater power",
+        "description": "The router does not measure the power sent to the water heater. How does the integration know it?",
+        "data": {
+          "power_source": "Water heater power"
+        },
+        "data_description": {
+          "power_source": "Rating plate: the power written on the tank. Dedicated meter: a sensor measuring only the water heater. Calibration: \"Calibrate power\" button after setup (measured by the surplus meter)."
+        }
+      },
+      "power_declared": {
+        "title": "Rating plate power",
+        "description": "Power written on the water heater's rating plate.",
+        "data": {
+          "declared_power": "Power"
+        }
+      },
+      "power_meter": {
+        "title": "Water heater meter",
+        "description": "Power sensor measuring only the water heater.",
+        "data": {
+          "meter_entity": "Power sensor"
+        }
+      },
+      "offpeak": {
+        "title": "Off-peak hours and target",
+        "description": "Used by the \"Solar + guarantee\" mode and the boost.",
+        "data": {
+          "target_temperature": "Target temperature",
+          "hysteresis": "Hysteresis",
+          "offpeak_start": "Off-peak start",
+          "offpeak_end": "Off-peak end",
+          "deadline": "Hot water no later than",
+          "offpeak_entity": "Off-peak entity (optional)"
+        },
+        "data_description": {
+          "offpeak_entity": "If set, the boost only runs while it is on, and always between off-peak start and the deadline.",
+          "deadline": "Defaults to the end of off-peak hours."
+        }
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "These settings can stay as they are.",
+        "data": {
+          "allow_external_control": "Allow external control (e.g. Chef d'orchestre)",
+          "max_manual_minutes": "Maximum forced-on duration",
+          "grid_entity": "Grid power sensor (optional)",
+          "scan_interval": "Polling interval",
+          "force_api": "Firmware format (fallback)",
+          "safety_temperature": "Safety temperature"
+        },
+        "data_description": {
+          "grid_entity": "Otherwise the router's measurement is used.",
+          "force_api": "Keep \"Automatic detection\". Only use if detection fails.",
+          "safety_temperature": "Above it, no forced-on is sent any more."
         }
       }
-    },
-    "error": {
-      "entity_required": "Choose an entity.",
-      "temperature_needs_probe": "This method needs a temperature probe."
     }
   },
   "selector": {
@@ -106,16 +242,16 @@
     },
     "power_source": {
       "options": {
-        "declared": "Declared",
+        "declared": "Rating plate",
         "meter": "Dedicated meter",
-        "calibration": "Calibration with the surplus meter"
+        "calibration": "Calibration after setup"
       }
     },
     "hot_method": {
       "options": {
         "temperature": "Temperature reached",
-        "thermostat": "Thermostat cut-off",
-        "energy": "Heating energy"
+        "thermostat": "The thermostat cuts off",
+        "energy": "After a heating energy"
       }
     },
     "force_api": {
@@ -136,6 +272,21 @@
   },
   "entity": {
     "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "solar": "Solar heating",
+          "waiting_surplus": "Waiting for surplus",
+          "on_slot": "Grid heating (ON slot)",
+          "boost": "Boost",
+          "forced": "Forced on",
+          "off": "Off",
+          "blocked": "Blocked by a controller",
+          "hot": "Tank hot",
+          "idle": "Not heating",
+          "safety": "Temperature safety"
+        }
+      },
       "routed_power": {
         "name": "Routed power"
       },
@@ -228,6 +379,11 @@
       "calibrate": {
         "name": "Calibrate power"
       }
+    },
+    "switch": {
+      "control_enabled": {
+        "name": "Control the router"
+      }
     }
   },
   "exceptions": {
@@ -257,6 +413,9 @@
     },
     "write_failed": {
       "message": "The router did not save the setting ({error})."
+    },
+    "control_disabled": {
+      "message": "Router control is disabled (\"Control the router\" switch off: display only)."
     }
   },
   "issues": {
@@ -285,6 +444,10 @@
         "controlled_keys": {
           "name": "Controlled settings",
           "description": "mode, boost, target_temperature (all by default)."
+        },
+        "reason": {
+          "name": "Reason",
+          "description": "Short explanation shown on the card (e.g. \"Batteries first\")."
         }
       }
     },
@@ -311,6 +474,10 @@
         "override": {
           "name": "Override",
           "description": "User action takes priority over the external controller."
+        },
+        "reason": {
+          "name": "Reason",
+          "description": "Short explanation shown on the card (e.g. \"Batteries first\")."
         }
       }
     },

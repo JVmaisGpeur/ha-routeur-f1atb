@@ -25,10 +25,16 @@ SCHEMA_EXTERNAL = vol.Schema(
         vol.Required("active"): cv.boolean,
         vol.Required(ATTR_CONTROLLER): cv.string,
         vol.Optional("controlled_keys"): vol.All(cv.ensure_list, [vol.In(EXTERNAL_KEYS)]),
+        vol.Optional("reason"): vol.All(cv.string, vol.Length(max=80)),
     }
 )
 SCHEMA_MODE = vol.Schema(
-    {**_BASE, vol.Required("mode"): vol.In(USER_MODES), vol.Optional("duration"): vol.All(vol.Coerce(int), vol.Range(min=1, max=1440))}
+    {
+        **_BASE,
+        vol.Required("mode"): vol.In(USER_MODES),
+        vol.Optional("duration"): vol.All(vol.Coerce(int), vol.Range(min=1, max=1440)),
+        vol.Optional("reason"): vol.All(cv.string, vol.Length(max=80)),
+    }
 )
 SCHEMA_BOOST = vol.Schema(
     {
@@ -58,7 +64,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
     async def set_external_control(call: ServiceCall) -> None:
         coord = _coordinator(hass, call.data[ATTR_DEVICE_ID])
         await coord.async_set_external_control(
-            call.data["active"], call.data[ATTR_CONTROLLER], call.data.get("controlled_keys")
+            call.data["active"], call.data[ATTR_CONTROLLER], call.data.get("controlled_keys"), call.data.get("reason")
         )
 
     async def set_mode(call: ServiceCall) -> None:
@@ -68,6 +74,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
             duration_min=call.data.get("duration"),
             controller=call.data.get(ATTR_CONTROLLER),
             override=call.data[ATTR_OVERRIDE],
+            reason=call.data.get("reason"),
         )
 
     async def boost(call: ServiceCall) -> None:

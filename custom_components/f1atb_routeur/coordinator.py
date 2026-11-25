@@ -167,6 +167,7 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
             "thermostat_open": False,
             "boost": None,
             "external": None,
+            "control_enabled": True,
         }
         defaults.update(stored)
         self.state = defaults
@@ -212,6 +213,15 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
         if dt_util.utcnow().timestamp() >= float(ext.get("expires_ts", 0)):
             return None
         return ext
+
+    @property
+    def control_enabled(self) -> bool:
+        """« Piloter le routeur » (True) ou « Affichage seulement » (False)."""
+        return bool(self.state.get("control_enabled", True))
+
+    def _require_control(self) -> None:
+        if not self.control_enabled:
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key="control_disabled")
 
     @property
     def user_mode(self) -> str:
@@ -262,6 +272,7 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
         except F1atbError as err:
             self.last_error = str(err)
             _LOGGER.warning("Commande de forçage refusée par le routeur : %s", err)
+        data["status"], data["status_info"] = self._status(data)
         if self._due(self._last_save_at, SAVE_EVERY_S, now):
             await self.async_save()
         return data
@@ -583,6 +594,14 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
         return True
 
     async def _async_control(self, data: dict) -> None:
+        if not self.control_enabled:
+            # Affichage seulement : on lève une seule fois un forçage posé par nous, puis plus rien
+            force = int(data.get("force_min") or 0)
+            if self._commanded is not None and force != 0 and self.action_config:
+                await self.client.async_force(self.action_index, 0, force)
+            self._commanded = None
+            data["desired"], data["reason"] = None, "display_only"
+            return
         if self.read_only or self.calibrating or not self.action_config:
             data["desired"], data["reason"] = None, "read_only" if self.read_only else "idle"
             return
@@ -603,6 +622,55 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
             if force != 0:
                 await self.client.async_force(idx, 0, force)
             self._commanded = None
+
+    def _status(self, data: dict) -> tuple[str, dict]:
+        """État lisible par la carte et les automatisations (capteur « status »)."""
+        now = dt_util.now()
+        ext = data.get("external")
+        slot = data.get("slot") or {}
+        force = int(data.get("force_min") or 0)
+        power = float(data.get("routed_power_w") or 0)
+        reason = data.get("reason")
+        info: dict[str, Any] = {
+            "power_w": round(power),
+            "temperature": data.get("water_temperature"),
+            "target": self.target_temp,
+            "controller": (ext or {}).get("controller"),
+            "reason": (ext or {}).get("reason"),
+            "slot_kind": slot.get("kind"),
+            "slot_end": slot.get("end"),
+            "force_min": force,
+            "until": None,
+        }
+        if ext:
+            info["until"] = datetime.fromtimestamp(float(ext["expires_ts"]), tz=dt_util.UTC).isoformat()
+        # Affichage seulement / lecture seule : on décrit quand même ce que fait le routeur
+        info["display_only"] = not self.control_enabled
+        info["read_only"] = self.read_only
+        if reason == "safety":
+            return "safety", info
+        if ext and data.get("desired") == "off":
+            return "blocked", info
+        if reason == "boost":
+            return "boost", info
+        if reason == "forced" or (force > 0 and data.get("desired") is None):
+            until = self.state.get("manual_until")
+            if reason == "forced" and until and self.effective_mode != MODE_EXTERNAL:
+                info["until"] = datetime.fromtimestamp(float(until), tz=dt_util.UTC).isoformat()
+            elif force > 0:
+                info["until"] = (now + timedelta(minutes=force)).isoformat()
+            return "forced", info
+        if data.get("desired") == "off" or force < 0:
+            return "off", info
+        if slot.get("kind") == "on" and power > 0:
+            return "on_slot", info
+        if power > 0:
+            return "solar", info
+        if data.get("reached"):
+            return "hot", info
+        if slot.get("kind") == "route":
+            return "waiting_surplus", info
+        return "idle", info
 
     # ------------------------------------------------------------------ actions
     @property
@@ -634,8 +702,15 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
         )
 
     async def async_set_mode(
-        self, mode: str, *, duration_min: int | None = None, controller: str | None = None, override: bool = False
+        self,
+        mode: str,
+        *,
+        duration_min: int | None = None,
+        controller: str | None = None,
+        override: bool = False,
+        reason: str | None = None,
     ) -> None:
+        self._require_control()
         if mode not in ALL_MODES or mode == MODE_EXTERNAL:
             raise ServiceValidationError(translation_domain=DOMAIN, translation_key="invalid_mode")
         self._check_owner("mode", controller, override)
@@ -644,6 +719,8 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
             if mode == MODE_GUARANTEE:
                 mode = MODE_SOLAR  # un pilote décide lui-même des rattrapages
             ext["mode"] = mode
+            if reason is not None:
+                ext["reason"] = reason[:80] or None
         else:
             if mode == MODE_FORCED:
                 max_min = int(_opt(self.entry, CONF_MAX_MANUAL_MIN, DEFAULT_MAX_MANUAL_MIN))
@@ -668,6 +745,7 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
         controller: str | None = None,
         override: bool = False,
     ) -> None:
+        self._require_control()
         self._check_owner("boost", controller, override)
         boost: dict[str, Any] = {"kind": "manual", "started": dt_util.now().timestamp(), "controller": controller}
         if duration_min:
@@ -700,6 +778,17 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
         await self.async_save()
         await self.async_request_refresh()
 
+    async def async_set_control_enabled(self, enabled: bool) -> None:
+        """Interrupteur control_enabled : à l'arrêt, plus aucune commande vers le routeur."""
+        self.state["control_enabled"] = bool(enabled)
+        if not enabled:
+            if self.state.get("external"):
+                _LOGGER.info("Affichage seulement : fin du pilotage par %s", self.state["external"].get("controller"))
+            self.state["external"] = None
+            self.state["boost"] = None
+        await self.async_save()
+        await self.async_request_refresh()
+
     async def async_set_power(self, value: float, origin: str = "declared") -> None:
         self.state["power_w"] = float(value)
         self.state["power_origin"] = origin
@@ -708,6 +797,7 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
 
     async def async_set_force_opening(self, value: float) -> None:
         """Réglage utilisateur uniquement : jamais appelé par le pilotage automatique."""
+        self._require_control()
         if not self.config or self.config.firmware.api != P.FW_JSON:
             raise ServiceValidationError(translation_domain=DOMAIN, translation_key="needs_v17")
         if self.read_only:
@@ -724,7 +814,11 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
             ) from err
         await self.async_refresh_config()
 
-    async def async_set_external_control(self, active: bool, controller: str, keys: list[str] | None) -> None:
+    async def async_set_external_control(
+        self, active: bool, controller: str, keys: list[str] | None, reason: str | None = None
+    ) -> None:
+        if active:
+            self._require_control()
         if not _opt(self.entry, CONF_ALLOW_EXTERNAL, True):
             raise ServiceValidationError(translation_domain=DOMAIN, translation_key="external_disabled")
         if self.read_only:
@@ -749,6 +843,8 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
                 keys=keys,
                 expires_ts=dt_util.utcnow().timestamp() + EXTERNAL_TIMEOUT_S,
             )
+            if reason is not None:
+                ext["reason"] = reason[:80] or None
             self.state["external"] = ext
         await self.async_save()
         await self.async_request_refresh()
@@ -757,6 +853,7 @@ class F1atbCoordinator(DataUpdateCoordinator[dict]):
         """Mesure la puissance du ballon : écart au compteur pendant un court forçage."""
         if self.calibrating:
             return
+        self._require_control()
         if self.read_only:
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="read_only",

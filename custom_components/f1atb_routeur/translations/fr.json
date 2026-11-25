@@ -4,96 +4,232 @@
     "step": {
       "user": {
         "title": "Ajouter un routeur F1ATB",
-        "description": "Saisissez l'adresse IP du routeur. Les routeurs détectés sur le réseau, ou connus d'un routeur déjà ajouté, sont aussi proposés automatiquement dans « Découverts ».",
+        "description": "Comment trouver le routeur ?",
+        "menu_options": {
+          "search": "Rechercher sur le réseau",
+          "manual": "Saisir l'adresse IP"
+        }
+      },
+      "search": {
+        "title": "Routeurs trouvés",
+        "description": "{count} routeur(s) F1ATB trouvé(s) sur le réseau. Cochez ceux à ajouter : le premier est configuré maintenant, les autres apparaissent dans « Découverts » pour être confirmés un par un.",
         "data": {
-          "host": "Adresse IP du routeur"
+          "routers": "Routeurs à ajouter"
+        }
+      },
+      "manual": {
+        "title": "Adresse du routeur",
+        "description": "Saisissez l'adresse IP du routeur (affichée sur sa page d'accueil ou dans votre box).",
+        "data": {
+          "host": "Adresse IP"
         }
       },
       "confirm": {
         "title": "Routeur F1ATB détecté",
-        "description": "Voulez-vous ajouter ce routeur ?\n\n**{name}** – {host} – firmware {version}\nActions : {actions}\n\nSi ce n'est pas un routeur que vous voulez piloter, choisissez « Ignorer » : il ne sera plus proposé."
+        "description": "Voulez-vous ajouter ce routeur ?\n\n**{name}** – {host} – firmware {version}\nSorties : {actions}\n\nSi ce n'est pas un routeur que vous voulez ajouter, choisissez « Ignorer » : il ne sera plus proposé."
       },
-      "water_heater": {
-        "title": "Chauffe-eau – {name} (firmware {version}) {untested}",
-        "description": "Indiquez la sortie qui alimente le chauffe-eau et comment l'intégration connaît sa température et sa puissance.",
+      "output": {
+        "title": "Sortie du chauffe-eau",
+        "description": "Le routeur a plusieurs sorties actives. Laquelle alimente le chauffe-eau ?",
         "data": {
-          "water_heater_action": "Sortie du routeur qui alimente le chauffe-eau",
-          "temp_source": "Température de l'eau",
-          "temp_channel": "Sonde du routeur",
-          "temp_entity": "Capteur de température Home Assistant",
-          "power_source": "Puissance du chauffe-eau",
-          "declared_power": "Puissance déclarée (plaque du ballon)",
-          "meter_entity": "Compteur dédié au chauffe-eau",
-          "hot_method": "Savoir que l'eau est chaude",
-          "hot_energy_kwh": "Énergie de chauffe par jour"
-        },
-        "data_description": {
-          "power_source": "Déclarée : la valeur saisie. Compteur dédié : la puissance est mesurée. Calibration : bouton « Calibrer » qui mesure l'écart au compteur pendant quelques secondes.",
-          "hot_method": "Température : avec une sonde. Thermostat : détecte la coupure du thermostat. Énergie : après l'énergie indiquée ci-dessous."
+          "water_heater_action": "Sortie du chauffe-eau"
         }
       },
-      "autonomous": {
-        "title": "Fonctionnement autonome",
-        "description": "Réglages du mode « Solaire + garantie » : si le soleil n'a pas suffi, le chauffe-eau est chauffé en heures creuses jusqu'à la consigne.\n\nLe planning du routeur contient déjà une plage ON : {on_slot}. Dans ce cas l'intégration démarre en « Solaire seul » pour ne pas chauffer deux fois.",
+      "temperature": {
+        "title": "Température de l'eau",
+        "description": "Comment l'intégration connaît-elle la température de l'eau ?\n\nSondes vues sur le routeur : {probes}\n\nSans sonde, l'intégration détecte que le ballon est chaud par la coupure du thermostat ou après une énergie de chauffe.",
+        "data": {
+          "temp_source": "Température de l'eau"
+        }
+      },
+      "temp_channel": {
+        "title": "Sonde du routeur",
+        "description": "Le routeur a plusieurs sondes. Laquelle est dans le chauffe-eau ?",
+        "data": {
+          "temp_channel": "Sonde du chauffe-eau"
+        }
+      },
+      "temp_entity": {
+        "title": "Capteur de température",
+        "description": "Choisissez le capteur Home Assistant qui mesure la température de l'eau.",
+        "data": {
+          "temp_entity": "Capteur de température"
+        }
+      },
+      "hot": {
+        "title": "Pas de sonde : quand l'eau est-elle chaude ?",
+        "description": "Sans sonde, l'intégration doit savoir quand arrêter de chauffer.",
+        "data": {
+          "hot_method": "Le ballon est chaud quand…"
+        },
+        "data_description": {
+          "hot_method": "Thermostat : le chauffe-eau ne consomme plus alors qu'on l'alimente (le plus simple). Énergie : après avoir fourni l'énergie indiquée à l'étape suivante."
+        }
+      },
+      "hot_energy": {
+        "title": "Énergie de chauffe",
+        "description": "Énergie qu'il faut fournir pour considérer le ballon chaud (par jour).",
+        "data": {
+          "hot_energy_kwh": "Énergie par jour"
+        }
+      },
+      "power": {
+        "title": "Puissance du chauffe-eau",
+        "description": "Le routeur ne mesure pas la puissance envoyée au chauffe-eau. Comment l'intégration la connaît-elle ?",
+        "data": {
+          "power_source": "Puissance du chauffe-eau"
+        },
+        "data_description": {
+          "power_source": "Plaque : la puissance écrite sur le ballon. Compteur dédié : un capteur qui mesure seulement le chauffe-eau. Calibration : bouton « Calibrer la puissance » après l'installation (mesure par le compteur de surplus)."
+        }
+      },
+      "power_declared": {
+        "title": "Puissance de la plaque",
+        "description": "Puissance écrite sur la plaque du chauffe-eau.",
+        "data": {
+          "declared_power": "Puissance"
+        }
+      },
+      "power_meter": {
+        "title": "Compteur du chauffe-eau",
+        "description": "Capteur de puissance qui mesure seulement le chauffe-eau.",
+        "data": {
+          "meter_entity": "Capteur de puissance"
+        }
+      },
+      "offpeak": {
+        "title": "Heures creuses",
+        "description": "En mode « Solaire + garantie », si le soleil n'a pas suffi, le chauffe-eau est chauffé pendant les heures creuses.\n\nLe planning du routeur contient déjà une plage ON : {on_slot}. Dans ce cas l'intégration démarre en « Solaire seul » pour ne pas chauffer deux fois.",
         "data": {
           "target_temperature": "Consigne de température",
-          "offpeak_entity": "Entité « heures creuses » (facultatif)",
           "offpeak_start": "Début des heures creuses",
-          "offpeak_end": "Fin des heures creuses",
-          "deadline": "Heure limite de garantie"
+          "offpeak_end": "Fin des heures creuses"
         }
       }
     },
     "error": {
       "cannot_connect": "Aucun routeur F1ATB ne répond à cette adresse.",
-      "entity_required": "Choisissez une entité.",
-      "temperature_needs_probe": "Cette méthode demande une sonde de température."
+      "none_found": "Aucun routeur F1ATB trouvé sur le réseau. Saisissez son adresse IP."
     },
     "abort": {
       "already_configured": "Ce routeur est déjà ajouté.",
-      "cannot_connect": "Le routeur ne répond plus."
+      "cannot_connect": "Le routeur ne répond plus.",
+      "nothing_selected": "Aucun routeur choisi."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Options",
-        "data": {
-          "target_temperature": "Consigne de température",
-          "offpeak_entity": "Entité « heures creuses » (facultatif)",
-          "offpeak_start": "Début des heures creuses",
-          "offpeak_end": "Fin des heures creuses",
-          "deadline": "Heure limite de garantie",
-          "hysteresis": "Hystérésis",
-          "safety_temperature": "Température de sécurité (coupe tout forçage)",
-          "max_manual_minutes": "Durée maximale d'une marche forcée manuelle",
-          "allow_external_control": "Autoriser le pilotage externe",
-          "grid_entity": "Capteur de puissance réseau (facultatif, sinon mesure du routeur)",
-          "scan_interval": "Intervalle d'interrogation",
-          "force_api": "Format du firmware (secours)"
-        },
-        "data_description": {
-          "force_api": "Laissez « Détection automatique ». À n'utiliser que si la détection échoue."
+        "description": "Que voulez-vous régler ?",
+        "menu_options": {
+          "output": "Chauffe-eau (sortie, température, puissance)",
+          "offpeak": "Heures creuses et consigne",
+          "advanced": "Avancé"
         }
       },
-      "water_heater": {
-        "title": "Chauffe-eau – {name} (firmware {version})",
+      "output": {
+        "title": "Sortie du chauffe-eau",
+        "description": "Le routeur a plusieurs sorties actives. Laquelle alimente le chauffe-eau ?",
         "data": {
-          "water_heater_action": "Sortie du routeur qui alimente le chauffe-eau",
-          "temp_source": "Température de l'eau",
-          "temp_channel": "Sonde du routeur",
-          "temp_entity": "Capteur de température Home Assistant",
-          "power_source": "Puissance du chauffe-eau",
-          "declared_power": "Puissance déclarée",
-          "meter_entity": "Compteur dédié au chauffe-eau",
-          "hot_method": "Savoir que l'eau est chaude",
-          "hot_energy_kwh": "Énergie de chauffe par jour"
+          "water_heater_action": "Sortie du chauffe-eau"
+        }
+      },
+      "temperature": {
+        "title": "Température de l'eau",
+        "description": "Comment l'intégration connaît-elle la température de l'eau ?\n\nSondes vues sur le routeur : {probes}\n\nSans sonde, l'intégration détecte que le ballon est chaud par la coupure du thermostat ou après une énergie de chauffe.",
+        "data": {
+          "temp_source": "Température de l'eau"
+        }
+      },
+      "temp_channel": {
+        "title": "Sonde du routeur",
+        "description": "Le routeur a plusieurs sondes. Laquelle est dans le chauffe-eau ?",
+        "data": {
+          "temp_channel": "Sonde du chauffe-eau"
+        }
+      },
+      "temp_entity": {
+        "title": "Capteur de température",
+        "description": "Choisissez le capteur Home Assistant qui mesure la température de l'eau.",
+        "data": {
+          "temp_entity": "Capteur de température"
+        }
+      },
+      "hot": {
+        "title": "Pas de sonde : quand l'eau est-elle chaude ?",
+        "description": "Sans sonde, l'intégration doit savoir quand arrêter de chauffer.",
+        "data": {
+          "hot_method": "Le ballon est chaud quand…"
+        },
+        "data_description": {
+          "hot_method": "Thermostat : le chauffe-eau ne consomme plus alors qu'on l'alimente (le plus simple). Énergie : après avoir fourni l'énergie indiquée à l'étape suivante."
+        }
+      },
+      "hot_energy": {
+        "title": "Énergie de chauffe",
+        "description": "Énergie qu'il faut fournir pour considérer le ballon chaud (par jour).",
+        "data": {
+          "hot_energy_kwh": "Énergie par jour"
+        }
+      },
+      "power": {
+        "title": "Puissance du chauffe-eau",
+        "description": "Le routeur ne mesure pas la puissance envoyée au chauffe-eau. Comment l'intégration la connaît-elle ?",
+        "data": {
+          "power_source": "Puissance du chauffe-eau"
+        },
+        "data_description": {
+          "power_source": "Plaque : la puissance écrite sur le ballon. Compteur dédié : un capteur qui mesure seulement le chauffe-eau. Calibration : bouton « Calibrer la puissance » après l'installation (mesure par le compteur de surplus)."
+        }
+      },
+      "power_declared": {
+        "title": "Puissance de la plaque",
+        "description": "Puissance écrite sur la plaque du chauffe-eau.",
+        "data": {
+          "declared_power": "Puissance"
+        }
+      },
+      "power_meter": {
+        "title": "Compteur du chauffe-eau",
+        "description": "Capteur de puissance qui mesure seulement le chauffe-eau.",
+        "data": {
+          "meter_entity": "Capteur de puissance"
+        }
+      },
+      "offpeak": {
+        "title": "Heures creuses et consigne",
+        "description": "Utilisé par le mode « Solaire + garantie » et le rattrapage.",
+        "data": {
+          "target_temperature": "Consigne de température",
+          "hysteresis": "Hystérésis",
+          "offpeak_start": "Début des heures creuses",
+          "offpeak_end": "Fin des heures creuses",
+          "deadline": "Eau chaude au plus tard à",
+          "offpeak_entity": "Entité « heures creuses » (facultatif)"
+        },
+        "data_description": {
+          "offpeak_entity": "Si renseignée, le rattrapage n'a lieu que quand elle est active, et toujours entre le début des heures creuses et l'heure limite.",
+          "deadline": "Par défaut, la fin des heures creuses."
+        }
+      },
+      "advanced": {
+        "title": "Avancé",
+        "description": "Ces réglages peuvent rester tels quels.",
+        "data": {
+          "allow_external_control": "Autoriser le pilotage externe (ex. Chef d'orchestre)",
+          "max_manual_minutes": "Durée maximale d'une marche forcée",
+          "grid_entity": "Capteur de puissance réseau (facultatif)",
+          "scan_interval": "Intervalle d'interrogation",
+          "force_api": "Format du firmware (secours)",
+          "safety_temperature": "Température de sécurité"
+        },
+        "data_description": {
+          "grid_entity": "Sinon la mesure du routeur est utilisée.",
+          "force_api": "Laissez « Détection automatique ». À n'utiliser que si la détection échoue.",
+          "safety_temperature": "Au-delà, plus aucune marche forcée n'est envoyée."
         }
       }
-    },
-    "error": {
-      "entity_required": "Choisissez une entité.",
-      "temperature_needs_probe": "Cette méthode demande une sonde de température."
     }
   },
   "selector": {
@@ -106,16 +242,16 @@
     },
     "power_source": {
       "options": {
-        "declared": "Déclarée",
+        "declared": "Plaque du ballon",
         "meter": "Compteur dédié",
-        "calibration": "Calibration par le compteur de surplus"
+        "calibration": "Calibration après l'installation"
       }
     },
     "hot_method": {
       "options": {
         "temperature": "Température atteinte",
-        "thermostat": "Coupure du thermostat",
-        "energy": "Énergie de chauffe"
+        "thermostat": "Le thermostat coupe",
+        "energy": "Après une énergie de chauffe"
       }
     },
     "force_api": {
@@ -136,6 +272,21 @@
   },
   "entity": {
     "sensor": {
+      "status": {
+        "name": "État",
+        "state": {
+          "solar": "Chauffe au solaire",
+          "waiting_surplus": "Attend du surplus",
+          "on_slot": "Chauffe sur le réseau (plage ON)",
+          "boost": "Rattrapage",
+          "forced": "Marche forcée",
+          "off": "Arrêt",
+          "blocked": "Bloqué par un pilote",
+          "hot": "Ballon chaud",
+          "idle": "Ne chauffe pas",
+          "safety": "Sécurité température"
+        }
+      },
       "routed_power": {
         "name": "Puissance routée"
       },
@@ -228,6 +379,11 @@
       "calibrate": {
         "name": "Calibrer la puissance"
       }
+    },
+    "switch": {
+      "control_enabled": {
+        "name": "Piloter le routeur"
+      }
     }
   },
   "exceptions": {
@@ -257,6 +413,9 @@
     },
     "write_failed": {
       "message": "Le routeur n'a pas enregistré le réglage ({error})."
+    },
+    "control_disabled": {
+      "message": "Le pilotage du routeur est désactivé (interrupteur « Piloter le routeur » à l'arrêt : affichage seulement)."
     }
   },
   "issues": {
@@ -285,6 +444,10 @@
         "controlled_keys": {
           "name": "Réglages pilotés",
           "description": "mode, boost, target_temperature (tous par défaut)."
+        },
+        "reason": {
+          "name": "Raison",
+          "description": "Courte explication affichée sur la carte (ex. « Batteries prioritaires »)."
         }
       }
     },
@@ -311,6 +474,10 @@
         "override": {
           "name": "Prioritaire",
           "description": "Action de l'utilisateur prioritaire sur le pilote externe."
+        },
+        "reason": {
+          "name": "Raison",
+          "description": "Courte explication affichée sur la carte (ex. « Batteries prioritaires »)."
         }
       }
     },

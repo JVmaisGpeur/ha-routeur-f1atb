@@ -42,6 +42,13 @@ def _state(c: F1atbCoordinator, key: str) -> float:
 
 SENSORS: tuple[F1atbSensorDescription, ...] = (
     F1atbSensorDescription(
+        key="status",
+        device_class=SensorDeviceClass.ENUM,
+        options=["solar", "waiting_surplus", "on_slot", "boost", "forced", "off", "blocked", "hot", "idle", "safety"],
+        value=lambda c, d: d.get("status"),
+        attrs=lambda c, d: d.get("status_info") or {},
+    ),
+    F1atbSensorDescription(
         key="routed_power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -133,13 +140,14 @@ SENSORS: tuple[F1atbSensorDescription, ...] = (
 
 def _external_attrs(ext: dict | None) -> dict:
     if not ext:
-        return {"controller": None, "controlled_keys": [], "expires_at": None, "mode": None}
+        return {"controller": None, "controlled_keys": [], "expires_at": None, "mode": None, "reason": None}
     expires = datetime.fromtimestamp(float(ext.get("expires_ts", 0)), tz=dt_util.UTC)
     return {
         "controller": ext.get("controller"),
         "controlled_keys": ext.get("keys", []),
         "expires_at": expires.isoformat(),
         "mode": ext.get("mode"),
+        "reason": ext.get("reason"),
         "target_temperature": ext.get("target_temperature"),
     }
 

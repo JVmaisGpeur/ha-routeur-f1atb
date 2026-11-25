@@ -24,6 +24,7 @@ PLATFORMS = [
     Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,
+    Platform.SWITCH,
 ]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -46,7 +47,7 @@ async def _async_register_card(hass: HomeAssistant) -> None:
         from homeassistant.components.http import StaticPathConfig
 
         await hass.http.async_register_static_paths([StaticPathConfig(CARD_URL, str(path), True)])
-        add_extra_js_url(hass, f"{CARD_URL}?v=1.0.0")
+        add_extra_js_url(hass, f"{CARD_URL}?v=1.1.0")
         hass.data[key] = True
     except Exception as err:  # noqa: BLE001 - la carte est facultative
         _LOGGER.warning("Carte non chargée automatiquement (%s) : ajoutez %s en ressource", err, CARD_URL)

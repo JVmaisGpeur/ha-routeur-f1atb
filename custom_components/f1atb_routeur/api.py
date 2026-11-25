@@ -145,25 +145,24 @@ class F1atbClient:
         if fw.api == P.FW_JSON:
             await self._get(f"/ForceAction?NumAction={int(index)}&Force={int(minutes)}", retries=1)
             return
-        # 16.xx : Force=1 ajoute 30 min de marche ; Force=-1 annule une marche forcée,
-        # sinon lance 30 min d'arrêt forcé (constaté sur un 16.10).
+        # 16.xx (constaté sur un 16.10) : Force=1 ajoute 30 min de marche, ou annule un
+        # arrêt forcé en cours ; Force=-1 annule une marche forcée, sinon lance 30 min d'arrêt.
         base = f"/ajax_etatActions?NumAction={int(index)}&Force="
         if minutes > 0:
             if current_force_min < 0:
-                _LOGGER.debug("16.xx : arrêt forcé en cours, marche forcée reportée")
-                return
-            await self._get(base + "1", retries=1)
+                await self._get(base + "1", retries=1)  # annule l'arrêt forcé
+            await self._get(base + "1", retries=1)  # +30 min de marche
         elif minutes < 0:
             if current_force_min > 0:
                 await self._get(base + "-1", retries=1)  # annule la marche forcée
                 await self._get(base + "-1", retries=1)  # puis arrêt forcé 30 min
             elif current_force_min == 0:
                 await self._get(base + "-1", retries=1)
-            # arrêt déjà en cours : il expirera, puis sera relancé
-        else:
-            if current_force_min > 0:
-                await self._get(base + "-1", retries=1)
-            # 16.xx : un arrêt forcé expire seul (≤ 30 min) ; aucune commande d'annulation vérifiée
+            # arrêt déjà en cours : il est relancé à son expiration
+        elif current_force_min > 0:
+            await self._get(base + "-1", retries=1)
+        elif current_force_min < 0:
+            await self._get(base + "1", retries=1)
 
     # ------------------------------------------------------------ réglage utilisateur
     async def async_set_force_opening(self, index: int, value: int) -> None:

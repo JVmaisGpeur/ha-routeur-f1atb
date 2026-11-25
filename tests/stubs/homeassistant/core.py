@@ -7,3 +7,4 @@ class _Bus:
     def async_fire(self, name, data=None): self.events.append((name, data))
 class HomeAssistant:
     def __init__(self): self.states = _States(); self.bus = _Bus(); self.data = {}
+def callback(f): return f
